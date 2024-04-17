@@ -84,7 +84,7 @@
 
         /* New addition styles */
         #new-task {
-            border-radius: 8px; /* Adjust the radius value as desired */
+            border-radius: 18px; /* Adjust the radius value as desired */
             font-size: 15px; /* Increase font size */
             padding: 10px; /* Increase padding */
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Adjust values as needed */
@@ -100,6 +100,7 @@
             background-color: #e0e0e0; /* Example hover effect */
         }
 
+
         #add-task {
             font-size: 15px; /* Increase font size */ 
             padding: 12px 24px; /* Increase padding */ 
@@ -111,13 +112,15 @@
         #add-task:hover {
             transform: scale(1.05); /* Slightly increase the size on hover */ 
         }
+
+        
     </style>
 </head>
 <body>
     <h2>Tasks</h2>
     <ul class="task-list" id="task-list"></ul>
     <input type="text" id="new-task" placeholder="Add new task" required>
-    <select id="new-task-priority">
+    <select id="new-task-priority" class="priority-select">
         <option value="low">Low</option>
         <option value="medium">Medium</option>
         <option value="high">High</option>
@@ -201,6 +204,7 @@
 
                 const prioritySelect = document.createElement('select');
                 prioritySelect.classList.add('priority');
+                prioritySelect.classList.add('priority-select'); // Add class for styling
                 const options = ['low', 'medium', 'high'];
                 options.forEach(option => {
                     const optionElement = document.createElement('option');
