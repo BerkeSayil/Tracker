@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #222;
+            color: #ddd;
+            /* New styles for background image */
+            background-image: url("images/img1.jpg");
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        .task-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #444;
+        }
+        .task-item:last-child {
+            border-bottom: none;
+        }
+        .task-item input[type="text"] {
+            flex: 1;
+            padding: 5px;
+            background-color: #333;
+            color: #ddd;
+            border: none;
+        }
+        .task-item button {
+            background-color: #f00;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+        }
+        .task-item button:hover {
+            background-color: #c00;
+        }
+        /* New styles for priority */
+        .task-item .priority {
+            background-color: #444;
+            color: #ddd;
+            border: none;
+            padding: 3px;
+        }
+        .task-item.high { background-color: #c00; }
+        .task-item.medium { background-color: #f60; }
+        .task-item.low { background-color: #0c0; } 
+        /* New styles for completed tasks */
+        .task-item.completed input[type="text"] {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+        .task-item input[type="checkbox"] {
+            position: absolute; 
+            opacity: 0; 
+            z-index: -1; 
+        }
+
+        .task-item input[type="checkbox"] + span {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background-image: url("images/unchecked.png"); /* Path to your unchecked image */
+            background-size: cover; 
+            vertical-align: middle;
+            cursor: pointer;
+        }
+
+        .task-item input[type="checkbox"]:checked + span {
+            background-image: url("images/checked.png"); /* Path to your checked image */
+        }
+
+        /* New addition styles */
+        #new-task {
+            border-radius: 5px; /* Adjust the radius value as desired */
+        }
+
+        #new-task {
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Adjust values as needed */
+        }
+
+        #new-task {
+            transition: background-color 0.3s ease; /* Adjust duration and easing as desired */
+        }
+        #new-task:hover {
+            background-color: #f0f0f0; /* Change background color on hover */
+        } 
+
+        #new-task-priority:hover {
+            background-color: #e0e0e0; /* Example hover effect */
+        }
+
+        #add-task {
+            background-image: linear-gradient(to bottom, #4CAF50, #45a049); /* Example gradient */
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        #add-task:hover {
+            transform: scale(1.05); /* Slightly increase the size on hover */ 
+        }
+    </style>
+</head>
+<body>
+    <h2>Tasks</h2>
+    <ul class="task-list" id="task-list"></ul>
+    <input type="text" id="new-task" placeholder="Add new task" required>
+    <select id="new-task-priority">
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+    </select>
+    <button id="add-task">Add Task</button>
+
+
+    <script>
+        let taskList = [];
+
+        // Load tasks from local storage on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const storedTasks = localStorage.getItem('tasks');
+            if (storedTasks) {
+                taskList = JSON.parse(storedTasks);
+                renderTasks();
+            }
+        });
+
+        document.getElementById('add-task').addEventListener('click', addTask);
+
+        function addTask() {
+            const taskInput = document.getElementById('new-task');
+            const taskText = taskInput.value.trim();
+            const prioritySelect = document.getElementById('new-task-priority');
+            const priority = prioritySelect.value;
+
+            if (taskText) {
+                taskList.push({ text: taskText, priority: priority, completed: false }); // Add completed property
+                renderTasks();
+                taskInput.value = '';
+                prioritySelect.value = 'medium'; // Reset priority to default
+            }
+        }
+
+        function renderTasks() {
+            const taskListEl = document.getElementById('task-list');
+            taskListEl.innerHTML = '';
+            taskList.forEach((task, index) => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('task-item');
+                listItem.classList.add(task.priority); // Add priority class for styling
+
+                // Add checkbox with the span for the image
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = task.completed;
+                checkbox.addEventListener('change', () => {
+                    taskList[index].completed = checkbox.checked;
+                    renderTasks(); // Re-render to update display and local storage
+                });
+                listItem.appendChild(checkbox);
+
+                const checkboxSpan = document.createElement('span');
+                listItem.appendChild(checkboxSpan);
+
+                // Toggle checkbox on span click
+                checkboxSpan.addEventListener('click', () => {
+                    checkbox.checked = !checkbox.checked; // Toggle the checkbox state
+                    taskList[index].completed = checkbox.checked;
+                    renderTasks(); // Re-render to update display and local storage
+                });
+
+                const taskInput = document.createElement('input');
+                taskInput.type = 'text';
+                taskInput.value = task.text;
+                taskInput.readOnly = true;
+
+                // Make taskInput editable on double-click
+                taskInput.addEventListener('dblclick', () => {
+                    taskInput.readOnly = false;
+                    taskInput.focus();
+                });
+
+                // Save changes on blur (when user clicks outside)
+                taskInput.addEventListener('blur', () => {
+                    taskList[index].text = taskInput.value;
+                    taskInput.readOnly = true;
+                    renderTasks(); // Re-render to update display and local storage
+                });
+
+                const prioritySelect = document.createElement('select');
+                prioritySelect.classList.add('priority');
+                const options = ['low', 'medium', 'high'];
+                options.forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option;
+                    optionElement.textContent = option.charAt(0).toUpperCase() + option.slice(1); // Capitalize first letter
+                    if (option === task.priority) {
+                        optionElement.selected = true;
+                    }
+                    prioritySelect.appendChild(optionElement);
+                });
+
+                // Update priority when changed
+                prioritySelect.addEventListener('change', () => {
+                    taskList[index].priority = prioritySelect.value;
+                    renderTasks(); // Re-render to update display and local storage
+                });
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.addEventListener('click', () => {
+                    taskList.splice(index, 1);
+                    renderTasks(); // Re-render to update display and local storage
+                });
+
+                listItem.appendChild(taskInput);
+                listItem.appendChild(prioritySelect);
+                listItem.appendChild(deleteBtn);
+                taskListEl.appendChild(listItem);
+
+                // Add 'completed' class if the task is completed for styling
+                if (task.completed) {
+                    listItem.classList.add('completed');
+                }
+            });
+
+            // Store updated taskList in local storage
+            localStorage.setItem('tasks', JSON.stringify(taskList));
+        }
+    </script>
+</body>
+</html>
